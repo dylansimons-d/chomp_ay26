@@ -1,15 +1,6 @@
 import pygame
 from util_params import *
-#from util_background import *
 
-
-# pygame setup
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-running = True
-
-#################### TESTING ZONE ##########################
 SCALE = 2  # 1=16px, 2=32px, 3=48px …
 
 grass_tile_location = 'Assets\Tiles/tile_0028.png'
@@ -102,28 +93,3 @@ def set_center_3x3(surf, cx, cy):
 gx, g =WIDTH//tile_width, HEIGHT//tile_height
 cx,cy = gx//2, gy//2
 set_center_3x3(background, cx, cy)
-
-
-#blit the background to our screen
-screen.blit(background, (0,0))
-#############################################################
-
-
-while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    # fill the screen with a color to wipe away anything from last frame
-    
-
-    # RENDER YOUR GAME HERE
-
-    # flip() the display to put your work on screen
-    pygame.display.flip()
-
-    clock.tick(60)  # limits FPS to 60
-
-pygame.quit()
