@@ -2,6 +2,7 @@ import pygame
 from util_params import *
 from util_background import *
 from car import *
+from traffic_lights import *
 
 # pygame setup
 pygame.init()
@@ -9,8 +10,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 running = True
 
-#################### TESTING ZONE ##########################
+score = 0
+font = pygame.font.SysFont("consolas", 20)
 
+#################### TESTING ZONE ##########################
 
 
 
@@ -20,31 +23,64 @@ running = True
 background = build_background()
 screen.blit(background, (0,0))
 
-#grid of car
+#grid and pixel locations
 grid_w, grid_h, cx, cy, tile_w, tile_h = grid_info()
+x_mid = cx * tile_w + tile_w *0.5
+y_mid = cy * tile_h + tile_h * 0.5
 
+# light cycle
+lights = Lights(cycle_time = 8.0)
+
+#stop lines
+cross_offset = 2
+stop_e = (cx - cross_offset) * tile_w - 0.2 * tile_w
+stop_w = (cx + cross_offset) * tile_w + 0.2 * tile_w
+stop_s = (cy - cross_offset) * tile_h - 0.2 * tile_h
+stop_n = (cy + cross_offset) * tile_h + 0.2 * tile_h
+
+def should_stop(car, phase):
+    if abs(car.vx) > abs(car.vy):
+        axis = 'EW'
+        at_line = car.x >= stop_e if car.vx > 0 else car.x <= stop_w 
+    else: 
+        axis = 'NS'
+        at_line = car.x >= stop_s if car.vy > 0 else car.y <= stop_n
+    return(phase != axis) and at_line
+
+
+#build car
 cars = build_car(tile_w, tile_h, cx, cy, WIDTH, HEIGHT, speed = 160)
 
+
 while running:
+    #clock
     dt = clock.tick(60) / 2000
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    # fill the screen with a color to wipe away anything from last frame
-    
+    lights.update(dt)
 
     # RENDER YOUR GAME HERE
     screen.blit(background, (0,0))
+
     for c in cars:
-        c.update(dt)
-        if c.offscreen(WIDTH, HEIGHT):
+        if not should_stop(c, lights.phase):
+            c.update(dt)
+        if c.offscreen(WIDTH,HEIGHT):
+            score += 1
             c.reset()
         c.draw(screen)
-        
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                lights.toggle()
+            elif event.key == pygame.K_t:
+                lights.auto = not lights.auto
+
+    lights.draw(screen, x_mid, y_mid, tile_w)
+
+    score_surf = font.render(f"Score: {score}", True, (255,255,255))
+    screen.blit(score_surf, (10, 10))
     # flip() the display to put your work on screen
     pygame.display.flip()
 

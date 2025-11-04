@@ -13,6 +13,7 @@ class Car():
         self.rect = pygame.Rect(0,0, int(w), int(h))
         self.rect.center = (int(x), int(y))
         self.start = (x,y)
+        
     #update location    
     def update(self, dt):
         self.x += self.vx * dt
@@ -31,12 +32,12 @@ class Car():
     
     def reset(self):
         self.x , self.y = self.start
-        self.ract.center = (int(self.x), int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
 
 def build_car(tile_w, tile_h, cx, cy, WIDTH, HEIGHT, speed = 160):
     #put cars on the right side of the roads
     x_mid = cx * tile_w + tile_w * 0.5
-    y_mid = cy * tile_h + tile_h *0.5
+    y_mid = cy * tile_h  + tile_h *0.5
 
     lane_off = tile_w * 0.25
     car_len = tile_w * 0.9

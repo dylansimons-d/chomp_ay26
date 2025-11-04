@@ -74,6 +74,7 @@ def _set_center_3x3(surf, cx, cy, tw, th):
             tid = CENTER_ID if (dx == 0 and dy == 0) else RING_ID
             surf.blit(_load_scaled(tid, tw, th), ((cx+dx)*tw, (cy+dy)*th))
 
+
 #builds the background
 def build_background():
     tw, th, _ = _measure_tile()
