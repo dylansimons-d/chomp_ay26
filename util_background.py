@@ -1,8 +1,8 @@
 import pygame
 from util_params import WIDTH, HEIGHT
 
-# ===== Config =====
-SCALE = 2  # change this to make tiles bigger
+
+SCALE = 2  
 
 # Tile IDs
 GRASS = 28
@@ -15,6 +15,7 @@ CENTER_ID, RING_ID = 407, 441           # 3×3 center (407) + ring (441)
 # Simple cache for scaled tiles
 _tile_cache = {}
 
+#helps with the tile numbers
 def _load_scaled(idx, tw, th):
     key = (idx, tw, th)
     img = _tile_cache.get(key)
@@ -25,12 +26,13 @@ def _load_scaled(idx, tw, th):
         _tile_cache[key] = img
     return img
 
+#measuring tiles and fitting them in place
 def _measure_tile():
-    """Load grass, scale by SCALE, and return (tile_w, tile_h, grass_img_scaled)."""
     grass = pygame.image.load("Assets/Tiles/tile_0028.png").convert_alpha()
     grass = pygame.transform.scale(grass, (grass.get_width()*SCALE, grass.get_height()*SCALE))
     return grass.get_width(), grass.get_height(), grass
 
+#paint tiles
 def _paint_grass(bg, tw, th):
     g = _load_scaled(GRASS, tw, th)
     for x in range(0, WIDTH, tw):
@@ -65,21 +67,15 @@ def _paint_crosswalks(surf, cx, cy, tw, th, offset=2):
     surf.blit(_load_scaled(V_XW_M, tw, th), ((cx+offset)*tw,  cy   *th))
     surf.blit(_load_scaled(V_XW_R, tw, th), ((cx+offset)*tw, (cy+1)*th))
 
+#intersection tiles
 def _set_center_3x3(surf, cx, cy, tw, th):
     for dy in (-1, 0, 1):
         for dx in (-1, 0, 1):
             tid = CENTER_ID if (dx == 0 and dy == 0) else RING_ID
             surf.blit(_load_scaled(tid, tw, th), ((cx+dx)*tw, (cy+dy)*th))
 
+#builds the background
 def build_background():
-    """
-    Returns a ready-to-blit Surface with:
-    - grass fill
-    - horizontal & vertical roads crossing the center
-    - crosswalks at offset 2
-    - center 3×3 (407 center, 441 ring)
-    Vertical road extends one tile further to the bottom edge.
-    """
     tw, th, _ = _measure_tile()
     gx, gy = WIDTH // tw, HEIGHT // th
     cx, cy = gx // 2, gy // 2
@@ -92,8 +88,8 @@ def build_background():
     _set_center_3x3(bg, cx, cy, tw, th)
     return bg
 
+
 def grid_info():
-    """(grid_w, grid_h, center_x, center_y, tile_w, tile_h) for convenience."""
     tw, th, _ = _measure_tile()
     gx, gy = WIDTH // tw, HEIGHT // th
     return gx, gy, gx//2, gy//2, tw, th
