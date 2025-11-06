@@ -1,6 +1,7 @@
 import pygame
 from util_params import *
 
+#class car
 class Car():
     def __init__(self, x, y, vx, vy, w, h, color):
         self.x = x
@@ -14,7 +15,7 @@ class Car():
         self.rect.center = (int(x), int(y))
         self.start = (x,y)
         
-    #update location    
+    #update location of cars   
     def update(self, dt):
         self.x += self.vx * dt
         self.y += self.vy *dt
@@ -22,24 +23,27 @@ class Car():
         self.rect.center = (int(self.x), int(self.y))
 
 
-    #create a rectangle
+    #create a rectangle for car
     def draw(self, surf):
         rect = pygame.Rect(int(self.x - self.w/2), int(self.y -self.h/2), int(self.w), int(self.h))
         pygame.draw.rect(surf, self.color, rect, border_radius = 6)
 
+    #help it loop around/ reset it
     def offscreen(self, W, H):
         return self.x < -60 or self.x > W+60 or self.y < -60 or self.y > H+60
     
+    #reset
     def reset(self):
         self.x , self.y = self.start
         self.rect.center = (int(self.x), int(self.y))
 
+#building the car
 def build_car(tile_w, tile_h, cx, cy, WIDTH, HEIGHT, speed = 160):
     #put cars on the right side of the roads
     x_mid = cx * tile_w + tile_w * 0.5
     y_mid = cy * tile_h  + tile_h *0.5
 
-    lane_off = tile_w * 0.25
+    lane_off = tile_w * 0.7
     car_len = tile_w * 0.9
     car_wid = tile_w * 0.5
 
@@ -54,7 +58,7 @@ def build_car(tile_w, tile_h, cx, cy, WIDTH, HEIGHT, speed = 160):
         #bottom to top
         'N': {'x': x_mid + lane_off, 'y':HEIGHT + 40, 'vx': 0, 'vy': -speed}
     }
-
+    #return the car
     return [
         Car(lanes['E']['x'], lanes['E']['y'], lanes['E']['vx'], lanes['E']['vy'], car_len, car_wid, (240, 160, 30)),
         Car(lanes['W']['x'], lanes['W']['y'], lanes['W']['vx'], lanes['W']['vy'], car_len, car_wid, (230, 90, 90)),

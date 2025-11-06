@@ -10,6 +10,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 running = True
 
+#score
 score = 0
 font = pygame.font.SysFont("consolas", 20)
 
@@ -19,7 +20,7 @@ font = pygame.font.SysFont("consolas", 20)
 
 
 #############################################################
-
+#blit screen/ background
 background = build_background()
 screen.blit(background, (0,0))
 
@@ -31,7 +32,7 @@ y_mid = cy * tile_h + tile_h * 0.5
 # light cycle
 lights = Lights(cycle_time = 8.0)
 
-#stop lines
+#stop lines where cars should stop
 cross_offset = 2
 stop_e = (cx - cross_offset) * tile_w - 0.2 * tile_w
 stop_w = (cx + cross_offset) * tile_w + 0.2 * tile_w
@@ -60,6 +61,7 @@ while running:
     # RENDER YOUR GAME HERE
     screen.blit(background, (0,0))
 
+    #loop for cars if not at light
     for c in cars:
         if not should_stop(c, lights.phase):
             c.update(dt)
@@ -68,14 +70,14 @@ while running:
             c.reset()
         c.draw(screen)
 
+    #press space to control lights t for auto
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 lights.toggle()
-            elif event.key == pygame.K_t:
-                lights.auto = not lights.auto
+            
 
     lights.draw(screen, x_mid, y_mid, tile_w)
 
