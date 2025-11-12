@@ -1,5 +1,6 @@
 import pygame
 from util_params import *
+from random import randint
 
 #class car
 class Car():
