@@ -9,8 +9,8 @@ class Spawner:
         self.tile_w = tile_w
         self.tile_h = tile_h
 
-        x_mid = cx * tile_w +0.5 *tile_w
-        y_mid = cy * tile_h +0.5 * tile_h
+        x_mid = cx * tile_w + 0.5 *tile_w
+        y_mid = cy * tile_h + 0.5 * tile_h
 
         self.dx = lane_spacing_x * tile_w
         self.dy = lane_spacing_y * tile_h
@@ -19,10 +19,10 @@ class Spawner:
         self.car_w = car_wid * tile_w
 
         self.lane_def = {
-            'E': {'x': -40,        'y': y_mid - self.dy, 'vx': +1, 'vy': 0},
-            'W': {'x': W + 40,     'y': y_mid + self.dy, 'vx': -1, 'vy': 0},
-            'S': {'x': x_mid - self.dx, 'y': -40,        'vx': 0,  'vy': +1},
-            'N': {'x': x_mid + self.dx, 'y': H + 40,     'vx': 0,  'vy': -1},
+            'E': {'x': -40,'y': y_mid - self.dy, 'vx': +1, 'vy': 0},
+            'W': {'x': W + 40,'y': y_mid + self.dy, 'vx': -1, 'vy': 0},
+            'S': {'x': x_mid - self.dx, 'y': +40,'vx': 0,  'vy': +1},
+            'N': {'x': x_mid + self.dx, 'y': H + 40,'vx': 0,  'vy': -1},
         }
 
         self.spawn_cd = {k: 0 for k in 'EWNS'}
@@ -48,10 +48,11 @@ class Spawner:
         d = self.lane_def[lane_key]
         spd = randint (140, 180)
         vx, vy = d['vx']* spd, d['vy']* spd
+
         if lane_key in ('E', 'W'):
             w,h = self.car_l, self.car_w
         else:
-            w, h = self.car_l, self.car_w
+            w, h = self.car_w, self.car_l
         color = (randint(80, 240), randint (80, 240), randint(80,240))
         return Car(d['x'], d['y'], vx, vy, w, h, color)
     
@@ -76,4 +77,4 @@ class Spawner:
         car.x, car.y, car.vx, car.vy = nc.x, nc.y, nc.vx, nc.vy
         car.w, car.h, car.color = nc.w, nc.h, nc.color
 
-        
+

@@ -31,6 +31,7 @@ spawner.seed(cars, per_lane =1)
 score = 0
 font = pygame.font.SysFont("consolas", 20)
 
+
 #################### TESTING ZONE ##########################
 
 
@@ -52,7 +53,7 @@ while running:
 
     lights.update(dt) 
     spawner.step_spawn(cars, dt)   
-
+    
     #loop for cars if not at light
     for c in cars:
         if not should_stop(c, lights.phase,dt):
