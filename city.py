@@ -20,17 +20,20 @@ if not start:
 
 #grid and pixel locations
 grid_w, grid_h, cx, cy, tile_w, tile_h = grid_info()
-x_mid = cx * tile_w + tile_w *0.5 * tile_w
-y_mid = cy * tile_h + tile_h * 0.5 * tile_h
+x_mid = cx * tile_w + 0.5 * tile_w
+y_mid = cy * tile_h + 0.5 * tile_h
 
-# light cycle
 lights = Lights(cycle_time = 8.0)
 should_stop = make_should_stop(cx, cy, tile_w, tile_h, cross_offset = 2, nudge = 0.15)
 
 #traffic
 spawner = Spawner(cx, cy, tile_w, tile_h, WIDTH, HEIGHT)
+
 cars = []
 spawner.seed(cars, per_lane =1)
+
+lane_spacing_x = spawner.dx
+lane_spacing_y = spawner.dy
 
 #score
 score = 0
@@ -69,7 +72,9 @@ while running:
             
     # RENDER YOUR GAME HERE
     screen.blit(background, (0,0))
-    for c in cars:c.draw(screen)
+    lights.draw(screen, x_mid, y_mid, tile_w, lane_offset_x=lane_spacing_x, lane_offset_y=lane_spacing_y)
+    for c in cars:
+        c.draw(screen)
     score_surf = font.render(f"Score: {score}", True, (255,255,255))
     screen.blit(score_surf, (10, 10))
 
