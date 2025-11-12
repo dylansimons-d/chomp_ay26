@@ -4,15 +4,20 @@ from util_background import *
 from car import *
 from traffic_lights import *
 from traffic_manager import *
-
+from title_screen import run_title
 
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 running = True
-
 background = build_background()
+
+start = run_title(screen, clock, WIDTH, HEIGHT, background=background)
+if not start:
+    pygame.quit()
+    raise SystemExit
+
 #grid and pixel locations
 grid_w, grid_h, cx, cy, tile_w, tile_h = grid_info()
 x_mid = cx * tile_w + tile_w *0.5 * tile_w
@@ -53,7 +58,7 @@ while running:
 
     lights.update(dt) 
     spawner.step_spawn(cars, dt)   
-    
+
     #loop for cars if not at light
     for c in cars:
         if not should_stop(c, lights.phase,dt):

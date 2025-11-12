@@ -3,14 +3,14 @@ from random import randint
 from car import Car
 
 class Spawner:
-    def __init__(self, cx, cy, tile_w, tile_h, W, H, lane_spacing_x =0.28, lane_spacing_y=0.28, car_len=0.90, car_wid=0.46):
+    def __init__(self, cx, cy, tile_w, tile_h, W, H, lane_spacing_x =0.5, lane_spacing_y=0.5, car_len=0.90, car_wid=0.46):
         self.W = W
         self.H = H
         self.tile_w = tile_w
         self.tile_h = tile_h
 
-        x_mid = cx * tile_w + 0.5 *tile_w
-        y_mid = cy * tile_h + 0.5 * tile_h
+        x_mid = cx * tile_w + tile_w * 0.5
+        y_mid = cy * tile_h  + tile_h *0.5
 
         self.dx = lane_spacing_x * tile_w
         self.dy = lane_spacing_y * tile_h
@@ -21,7 +21,7 @@ class Spawner:
         self.lane_def = {
             'E': {'x': -40,'y': y_mid - self.dy, 'vx': +1, 'vy': 0},
             'W': {'x': W + 40,'y': y_mid + self.dy, 'vx': -1, 'vy': 0},
-            'S': {'x': x_mid - self.dx, 'y': +40,'vx': 0,  'vy': +1},
+            'S': {'x': x_mid - self.dx, 'y': -40,'vx': 0,  'vy': +1},
             'N': {'x': x_mid + self.dx, 'y': H + 40,'vx': 0,  'vy': -1},
         }
 
@@ -29,11 +29,21 @@ class Spawner:
         for k in self.spawn_cd: self._reset_timer(k)
 
     def _reset_timer(self, lane_key):
-        self.spawn_cd[lane_key] = randint(50,150)/ 100
+        self.spawn_cd[lane_key] = randint(50,150) / 25
 
     def _lane_of(self, c):
         return 'E' if c.vx> 0 else 'W' if c.vx<0 else 'S' if c.vy>0 else 'N'
     
+    def _front_pos(c):
+        half = c.w*0.5 if abs(c.vx)>= abs(c.vy) else c.h * 0.5
+        return (c.x +half) if c.vx>0 else (c.x -half) if c.vx< 0 else \
+               (c.y +half) if c.vy>0 else (c.y -half) 
+    
+    def _rear_pos(c):
+        half = c.w*0.5 if abs(c.vx)>=abs(c.vy) else c.h*0.5
+        return (c.x - half) if c.vx>0 else (c.x + half) if c.vx<0 else \
+               (c.y - half) if c.vy>0 else (c.y + half)
+
     def _entrance_clear(self, lane_key, cars, need_len):
         sx, sy = self.lane_def[lane_key]['x'], self.lane_def[lane_key]['y']
         horiz = lane_key in ('E', 'W')
