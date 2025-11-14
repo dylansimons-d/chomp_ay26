@@ -67,12 +67,12 @@ class Lights():
 
 def make_should_stop(cx, cy, tile_w, tile_h, cross_offset=2, nudge=0.15):
     
-    stop_e = (cx - cross_offset) * tile_w
-    stop_w = (cx + cross_offset) * tile_w
-    stop_s = (cy - cross_offset) * tile_h
-    stop_n = (cy + cross_offset) * tile_h
-    nudge_x = nudge * tile_w
-    nudge_y = nudge * tile_h
+    stop_e_x = (cx - cross_offset) * tile_w
+    stop_w_x = (cx + cross_offset) * tile_w
+    stop_s_y = (cy - cross_offset) * tile_h
+    stop_n_y = (cy + cross_offset) * tile_h
+    nudgex = nudge * tile_w
+    nudgey = nudge * tile_h
 
     def half_along(c):
         return (c.w * 0.5) if abs(c.vx) >= abs(c.vy) else (c.h * 0.5)
@@ -89,15 +89,29 @@ def make_should_stop(cx, cy, tile_w, tile_h, cross_offset=2, nudge=0.15):
         half = half_along(car)
 
         if horiz:
-            if car.vx > 0:   # Eastbound — stop before STOP_E
-                return (nx + half) >= (stop_e - nudge_x)
-            else:            # Westbound — stop after STOP_W
-                return (nx - half) <= (stop_w + nudge_x)
+            sign = 1 if car.vx > 0 else -1
+            front_now  = car.x + sign * (car.w * 0.5)
+            front_next = front_now + car.vx * dt
+            if sign > 0:  # E → approaching stop_e_x from left
+                if front_now >= stop_e_x - nudgex:   # already past → never stop
+                    return False
+                return front_next >= stop_e_x - nudgex
+            else:         # W → approaching stop_w_x from right
+                if front_now <= stop_w_x + nudgex:
+                    return False
+                return front_next <= stop_w_x + nudgex
         else:
-            if car.vy > 0:   # Southbound — stop before STOP_S
-                return (ny + half) >= (stop_s - nudge_y)
-            else:            # Northbound — stop after STOP_N
-                return (ny - half) <= (stop_n + nudge_y)
+            sign = 1 if car.vy > 0 else -1
+            front_now  = car.y + sign * (car.h * 0.5)
+            front_next = front_now + car.vy * dt
+            if sign > 0:  # S → approaching stop_s_y from above
+                if front_now >= stop_s_y - nudgey:
+                    return False
+                return front_next >= stop_s_y - nudgey
+            else:         # N → approaching stop_n_y from below
+                if front_now <= stop_n_y + nudgey:
+                    return False
+                return front_next <= stop_n_y + nudgey
 
     return should_stop
         
