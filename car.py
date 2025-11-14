@@ -67,5 +67,6 @@ def build_car(tile_w, tile_h, cx, cy, WIDTH, HEIGHT, speed = 160):
         Car(lanes['N']['x'], lanes['N']['y'], lanes['N']['vx'], lanes['N']['vy'], car_wid, car_len, (80, 120, 240))
     ]
 
-        
+
+
 

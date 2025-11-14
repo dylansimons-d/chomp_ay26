@@ -87,4 +87,32 @@ class Spawner:
         car.x, car.y, car.vx, car.vy = nc.x, nc.y, nc.vx, nc.vy
         car.w, car.h, car.color = nc.w, nc.h, nc.color
 
+class IntersectionCrashDetector:
+    def __init__(self, x_mid, y_mid, tile_w, tile_h, scale = 1.05):
+        w = int(tile_w * scale); h = int(tile_h * scale)
+        self.zone = pygame.Rect(int(x_mid - w//2), int(y_mid - h//2), w, h)
 
+    @staticmethod
+    def _axis_of(c):
+        return'EW' if abs(c.vx) >= abs(c.vy) else 'NS'
+
+    @staticmethod
+    def _rect(c):
+        return pygame.Rect(int(c.x - c.w/2), int(c.y - c.h/2), int(c.w), int(c.h))
+    
+    def check(self, cars):
+        inside = []
+        for c in cars:
+            r = self._rect(c)
+            if r.colliderect(self.zone):
+                inside.append((c, r))
+        for i in range(len(inside)):
+            ci, ri = inside[i]
+            axi = self._axis_of(ci)
+            for j in range(i+1, len(inside)):
+                cj, rj = inside[j]
+                if axi != self._axis_of(cj) and ri.colliderect(rj):
+                    return True, cj, cj
+        return False, None, None
+    def debug_draw(self, screen, color=(255,0,255)):
+        pygame.draw.ract(screen,color, self.zone, 2)

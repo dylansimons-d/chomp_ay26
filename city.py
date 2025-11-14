@@ -23,6 +23,10 @@ grid_w, grid_h, cx, cy, tile_w, tile_h = grid_info()
 x_mid = cx * tile_w + 0.5 * tile_w
 y_mid = cy * tile_h + 0.5 * tile_h
 
+#crash
+crash = IntersectionCrashDetector(x_mid, y_mid, tile_w, tile_h, scale=1.05)
+
+#lights
 lights = Lights(cycle_time = 8.0)
 should_stop = make_should_stop(cx, cy, tile_w, tile_h, cross_offset = 2, nudge = 0.15)
 
@@ -69,7 +73,25 @@ while running:
         if c.offscreen(WIDTH,HEIGHT):
             score += 1
             spawner.respawn_same_lane(c)
-            
+
+    #check crash
+    crashed, a, b = crash.check(cars)
+    if crashed:
+        #quick game-over layover
+        screen.blit(background, (0,0))
+        lights.draw(screen, x_mid, y_mid, tile_w,
+                    lane_offset_x=spawner.dx, lane_offset_y=spawner.dy)
+        for c in cars: c.draw(screen)
+        ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        ov.fill((160,0,0,140))
+        screen.blit(ov, (0,0))
+        msg = font.render("CRASH!  Game Over", True, (255,255,255))
+        screen.blit(msg, (WIDTH//2 - msg.get_width()//2, HEIGHT//2 - msg.get_height()//2))
+        pygame.display.flip()
+        pygame.time.wait(5000)
+        running = False
+        continue
+
     # RENDER YOUR GAME HERE
     screen.blit(background, (0,0))
     lights.draw(screen, x_mid, y_mid, tile_w, lane_offset_x=lane_spacing_x, lane_offset_y=lane_spacing_y)
