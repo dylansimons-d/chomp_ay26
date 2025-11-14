@@ -3,11 +3,11 @@ ew200 in-class project
 
 ##Game Screenshots
 title screen:
-![screenshot](Screenshot2025-11-13 211243.png)
+![screenshot](Screenshot_2025-11-13_211243.png)
 gameplay:
-![screenshot](Screenshot2025-11-13 211326.png)
+![screenshot](Screenshot_2025-11-13_211326.png)
 deathscreen:
-![screenshot](Screenshot2025-11-13 deathscreen.png)
+![screenshot](Screenshot_2025-11-13_deathscreen.png)
 
 #Traffic Simulator (Overview):
     - Control the lights with space bar
