@@ -31,18 +31,96 @@ class Spawner:
     def _reset_timer(self, lane_key):
         self.spawn_cd[lane_key] = randint(50,150) / 25
 
-    def _lane_of(self, c):
+    @staticmethod
+    def _lane_of(c):
         return 'E' if c.vx> 0 else 'W' if c.vx<0 else 'S' if c.vy>0 else 'N'
     
+    @staticmethod
+    def _axis(c):
+        return 'EW' if abs(c.vx) >= abs(c.vy) else 'NS'
+    
+    @staticmethod
+    def _dir_sign(c):
+        # +1 if E or S, -1 if W or N; also return axis
+        if abs(c.vx) >= abs(c.vy):
+            return (1 if c.vx > 0 else -1), 'EW'
+        else:
+            return (1 if c.vy > 0 else -1), 'NS'
+
+    @staticmethod
     def _front_pos(c):
         half = c.w*0.5 if abs(c.vx)>= abs(c.vy) else c.h * 0.5
         return (c.x +half) if c.vx>0 else (c.x -half) if c.vx< 0 else \
                (c.y +half) if c.vy>0 else (c.y -half) 
     
+    @staticmethod
     def _rear_pos(c):
         half = c.w*0.5 if abs(c.vx)>=abs(c.vy) else c.h*0.5
         return (c.x - half) if c.vx>0 else (c.x + half) if c.vx<0 else \
                (c.y - half) if c.vy>0 else (c.y + half)
+    
+    def should_que(self, car, cars, gap_px, dt= 0, lane_tol= 2.5):
+        sign, axis = self._dir_sign(car)
+
+        best_dist = None
+        leader = None
+        if axis == 'EW':
+            lane_y = car.y
+            my_pos = car.x
+            for other in cars:
+                if other is car: 
+                    continue
+                if self._axis(other) != 'EW':
+                    continue
+                # same lane line?
+                if abs(other.y - lane_y) > lane_tol:
+                    continue
+                # ahead in my travel direction?
+                if sign > 0 and other.x <= my_pos:
+                    continue
+                if sign < 0 and other.x >= my_pos:
+                    continue
+                dist = abs(other.x - my_pos)
+                if best_dist is None or dist < best_dist:
+                    best_dist = dist
+                    leader = other
+        else:  # 'NS'
+            lane_x = car.x
+            my_pos = car.y
+            for other in cars:
+                if other is car:
+                    continue
+                if self._axis(other) != 'NS':
+                    continue
+                if abs(other.x - lane_x) > lane_tol:
+                    continue
+                if sign > 0 and other.y <= my_pos:
+                    continue
+                if sign < 0 and other.y >= my_pos:
+                    continue
+                dist = abs(other.y - my_pos)
+                if best_dist is None or dist < best_dist:
+                    best_dist = dist
+                    leader = other
+
+        if leader is None:
+            return False  # no one ahead → free to go
+
+        # Project MY next front position this frame.
+        if axis == 'EW':
+            next_front = (car.x + car.vx * dt) + (car.w * 0.5 if sign > 0 else -car.w * 0.5)
+            leader_rear = self._rear_pos(leader)
+            if sign > 0:
+                return next_front > (leader_rear - gap_px)
+            else:
+                return next_front < (leader_rear + gap_px)
+        else:  # 'NS'
+            next_front = (car.y + car.vy * dt) + (car.h * 0.5 if sign > 0 else -car.h * 0.5)
+            leader_rear = self._rear_pos(leader)
+            if sign > 0:
+                return next_front > (leader_rear - gap_px)
+            else:
+                return next_front < (leader_rear + gap_px)
 
     def _entrance_clear(self, lane_key, cars, need_len):
         sx, sy = self.lane_def[lane_key]['x'], self.lane_def[lane_key]['y']

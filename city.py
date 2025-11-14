@@ -65,10 +65,12 @@ while running:
 
     lights.update(dt) 
     spawner.step_spawn(cars, dt)   
-
+    follow_gap = 0.6 * tile_w
     #loop for cars if not at light
     for c in cars:
-        if not should_stop(c, lights.phase,dt):
+        stop_red = should_stop(c, lights.phase, dt)
+        stop_queue = spawner.should_que(c, cars, gap_px=follow_gap, dt=dt)
+        if not (stop_red or stop_queue):
             c.update(dt)
         if c.offscreen(WIDTH,HEIGHT):
             score += 1
