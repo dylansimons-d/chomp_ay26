@@ -5,6 +5,7 @@ from car import *
 from traffic_lights import *
 from traffic_manager import *
 from title_screen import run_title
+from game_rules import *
 
 # pygame setup
 pygame.init()
@@ -25,13 +26,13 @@ y_mid = cy * tile_h + 0.5 * tile_h
 
 #crash
 crash = IntersectionCrashDetector(x_mid, y_mid, tile_w, tile_h, scale=1.05)
-
 #lights
 lights = Lights(cycle_time = 8.0)
 should_stop = make_should_stop(cx, cy, tile_w, tile_h, cross_offset = 2, nudge = 0.15)
 
 #traffic
 spawner = Spawner(cx, cy, tile_w, tile_h, WIDTH, HEIGHT)
+queue_loss = QueueDefeat(cx, cy, tile_w, tile_h, spawner.dx, spawner.dy, limit=10)
 
 cars = []
 spawner.seed(cars, per_lane =1)
@@ -75,7 +76,21 @@ while running:
         if c.offscreen(WIDTH,HEIGHT):
             score += 1
             spawner.respawn_same_lane(c)
-
+    lost, approach, count = queue_loss.check(cars)
+    if lost:
+        screen.blit(background, (0,0))
+        lights.draw(screen, x_mid, y_mid, tile_w,
+                    lane_offset_x=spawner.dx, lane_offset_y=spawner.dy)
+        for c in cars: c.draw(screen)
+        ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        ov.fill((0,0,0,160))
+        screen.blit(ov, (0,0))
+        msg = font.render(f"GRIDLOCK on {approach}: {count} cars – Game Over", True, (255,255,255))
+        screen.blit(msg, (WIDTH//2 - msg.get_width()//2, HEIGHT//2 - msg.get_height()//2))
+        pygame.display.flip()
+        pygame.time.wait(1500)
+        running = False
+        continue
     #check crash
     crashed, a, b = crash.check(cars)
     if crashed:
