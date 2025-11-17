@@ -88,7 +88,7 @@ while running:
         msg = font.render(f"GRIDLOCK on {approach}: {count} cars – Game Over", True, (255,255,255))
         screen.blit(msg, (WIDTH//2 - msg.get_width()//2, HEIGHT//2 - msg.get_height()//2))
         pygame.display.flip()
-        pygame.time.wait(1500)
+        pygame.time.wait(5000)
         running = False
         continue
     #check crash
