@@ -5,7 +5,7 @@ class IntersectionCrashDetector:
     def __init__(self, x_mid, y_mid, tile_w, tile_h, scale=1.05):
         w = int(tile_w * scale); h = int(tile_h * scale)
         self.zone = pygame.Rect(int(x_mid - w//2), int(y_mid - h//2), w, h)
-
+        self.crash_sound = pygame.mixer.Sound('Assets\Audio\impactPunch_heavy_004.ogg')
     @staticmethod
     def _axis_of(c):  # 'EW' for horizontal, 'NS' for vertical
         return 'EW' if abs(c.vx) >= abs(c.vy) else 'NS'
@@ -26,6 +26,7 @@ class IntersectionCrashDetector:
             for j in range(i+1, len(inside)):
                 cj, rj = inside[j]
                 if axi != self._axis_of(cj) and ri.colliderect(rj):
+                    self.crash_sound.play()
                     return True, ci, cj
         return False, None, None
 
@@ -48,6 +49,7 @@ class QueueDefeat:
         self.dx = lane_dx; self.dy = lane_dy
         self.slackx = slack * tile_w; self.slacky = slack * tile_h
         self.lane_tol = lane_tol; self.limit = limit
+        self.pile_up_sound = pygame.mixer.Sound('Assets\Audio\impactGlass_medium_003.ogg')
 
         # stop lines (pixels)
         self.stop_e_x = (cx - cross_offset) * tile_w
@@ -101,5 +103,6 @@ class QueueDefeat:
 
         for k in ('E','W','N','S'):
             if counts[k] >= self.limit:
+                self.pile_up_sound.play()
                 return True, k, counts[k]
         return False, None, 0

@@ -17,7 +17,7 @@ class Spawner:
 
         self.car_l = car_len *tile_w
         self.car_w = car_wid * tile_w
-
+        
         self.lane_def = {
             'E': {'x': -40,'y': y_mid - self.dy, 'vx': +1, 'vy': 0},
             'W': {'x': W + 40,'y': y_mid + self.dy, 'vx': -1, 'vy': 0},
@@ -169,6 +169,8 @@ class IntersectionCrashDetector:
     def __init__(self, x_mid, y_mid, tile_w, tile_h, scale = 1.05):
         w = int(tile_w * scale); h = int(tile_h * scale)
         self.zone = pygame.Rect(int(x_mid - w//2), int(y_mid - h//2), w, h)
+        self.crash_sound = pygame.mixer.Sound('Assets\Audio\impactPunch_heavy_004.ogg')
+        
 
     @staticmethod
     def _axis_of(c):
@@ -191,6 +193,8 @@ class IntersectionCrashDetector:
                 cj, rj = inside[j]
                 if axi != self._axis_of(cj) and ri.colliderect(rj):
                     return True, cj, cj
+                self.crash_sound.play()
         return False, None, None
+        
     def debug_draw(self, screen, color=(255,0,255)):
         pygame.draw.ract(screen,color, self.zone, 2)
