@@ -9,6 +9,7 @@ from game_rules import *
 from game_flow import *
 
 # pygame setup
+pygame.mixer.init(frequency=44100, size = -16, channels = 2, buffer = 512)
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
@@ -63,16 +64,40 @@ while app_running:
     lane_spacing_x, lane_spacing_y = spawner.dx, spawner.dy
     follow_gap = 0.6 * tile_w
 
+    player = None
+    next_ev_score = 51  # first threshold
+
+    def spawn_emergency(x_mid, y_mid, lane_dx, tile_w):
+        w = 0.50 * tile_w
+        h = 0.90 * tile_w 
+        # Import Emergency if not already: from car import Emergency
+        return Emergency(
+            x = x_mid + lane_dx,   # align with northbound lane
+            y = HEIGHT - (h*0.6),
+            vx = 0, vy = -220,
+            w = w, h=h
+        )
+
     round_running = True
     while round_running:
         dt = clock.tick(60) / 1000
+        keys = pygame.key.get_pressed()
+        #control/ update the emergency vehicle
+        if player is not None:
+            player.control(keys, dt)
+            if player.offscreen(WIDTH, HEIGHT):
+                player.stop_siren()
+                player = None
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 round_running = False
                 app_running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                lights.toggle()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    lights.toggle()
+                elif event.key == pygame.K_f and player is not None:
+                    player.toggle_siren()
 
         if not app_running:
             break
@@ -82,12 +107,16 @@ while app_running:
 
         for c in cars:
             stop_red   = should_stop(c, lights.phase, dt)
-            stop_que = spawner.should_que(c, cars, gap_px=follow_gap, dt=dt)  # NOTE: should_queue
+            stop_que = spawner.should_que(c, cars, gap_px=follow_gap, dt=dt)  
             if not (stop_red or stop_que):
                 c.update(dt)
             if c.offscreen(WIDTH, HEIGHT):
                 score += 1
                 spawner.respawn_same_lane(c)
+            if player is None and score >= next_ev_score:
+                player = spawn_emergency(x_mid, y_mid, lane_spacing_x, tile_w)
+                player.start_siren()
+                next_ev_score += 51
 
         # gridlock?
         lost, approach, count = queue_loss.check(cars)
@@ -116,6 +145,8 @@ while app_running:
         lights.draw(screen, x_mid, y_mid, tile_w,
                     lane_offset_x=lane_spacing_x, lane_offset_y=lane_spacing_y)
         for c in cars: c.draw(screen)
+        if player is not None: 
+            player.draw(screen)
         screen.blit(font.render(f"Score: {score}", True, (255,255,255)), (10,10))
         pygame.display.flip()
 
