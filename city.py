@@ -6,6 +6,7 @@ from traffic_lights import *
 from traffic_manager import *
 from title_screen import run_title
 from game_rules import *
+from game_flow import *
 
 # pygame setup
 pygame.init()
@@ -13,6 +14,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 running = True
 background = build_background()
+
+
 
 start = run_title(screen, clock, WIDTH, HEIGHT, background=background)
 if not start:
@@ -43,83 +46,77 @@ lane_spacing_y = spawner.dy
 #score
 score = 0
 font = pygame.font.SysFont("consolas", 20)
-
+app_running = True
 
 #################### TESTING ZONE ##########################
+
 
 
 
 #############################################################
 
 
-while running:
-    #clock
-    dt = clock.tick(60) / 1000
+while app_running:
+    (background, cx, cy, tile_w, tile_h, x_mid, y_mid,
+     lights, should_stop, spawner, cars, crash, queue_loss, score) = start_round(limit_queue=10)
 
-    #press space to control lights 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+    lane_spacing_x, lane_spacing_y = spawner.dx, spawner.dy
+    follow_gap = 0.6 * tile_w
+
+    round_running = True
+    while round_running:
+        dt = clock.tick(60) / 1000
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                round_running = False
+                app_running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 lights.toggle()
 
-    lights.update(dt) 
-    spawner.step_spawn(cars, dt)   
-    follow_gap = 0.6 * tile_w
-    #loop for cars if not at light
-    for c in cars:
-        stop_red = should_stop(c, lights.phase, dt)
-        stop_queue = spawner.should_que(c, cars, gap_px=follow_gap, dt=dt)
-        if not (stop_red or stop_queue):
-            c.update(dt)
-        if c.offscreen(WIDTH,HEIGHT):
-            score += 1
-            spawner.respawn_same_lane(c)
-    lost, approach, count = queue_loss.check(cars)
-    if lost:
+        if not app_running:
+            break
+
+        lights.update(dt)
+        spawner.step_spawn(cars, dt)
+
+        for c in cars:
+            stop_red   = should_stop(c, lights.phase, dt)
+            stop_que = spawner.should_que(c, cars, gap_px=follow_gap, dt=dt)  # NOTE: should_queue
+            if not (stop_red or stop_que):
+                c.update(dt)
+            if c.offscreen(WIDTH, HEIGHT):
+                score += 1
+                spawner.respawn_same_lane(c)
+
+        # gridlock?
+        lost, approach, count = queue_loss.check(cars)
+        if lost:
+            choice = game_over_overlay(screen, f"GRIDLOCK on {approach}: {count} cars", background)
+            if choice == "restart":
+                round_running = False
+                continue
+            app_running = False
+            round_running = False
+            continue
+
+        # crash?
+        crashed, a, b = crash.check(cars)
+        if crashed:
+            choice = game_over_overlay(screen, "CRASH!  Game Over", background)
+            if choice == "restart":
+                round_running = False
+                continue
+            app_running = False
+            round_running = False
+            continue
+
+        # draw
         screen.blit(background, (0,0))
         lights.draw(screen, x_mid, y_mid, tile_w,
-                    lane_offset_x=spawner.dx, lane_offset_y=spawner.dy)
+                    lane_offset_x=lane_spacing_x, lane_offset_y=lane_spacing_y)
         for c in cars: c.draw(screen)
-        ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        ov.fill((0,0,0,160))
-        screen.blit(ov, (0,0))
-        msg = font.render(f"GRIDLOCK on {approach}: {count} cars – Game Over", True, (255,255,255))
-        screen.blit(msg, (WIDTH//2 - msg.get_width()//2, HEIGHT//2 - msg.get_height()//2))
+        screen.blit(font.render(f"Score: {score}", True, (255,255,255)), (10,10))
         pygame.display.flip()
-        pygame.time.wait(5000)
-        running = False
-        continue
-    #check crash
-    crashed, a, b = crash.check(cars)
-    if crashed:
-        #quick game-over layover
-        screen.blit(background, (0,0))
-        lights.draw(screen, x_mid, y_mid, tile_w,
-                    lane_offset_x=spawner.dx, lane_offset_y=spawner.dy)
-        for c in cars: c.draw(screen)
-        ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        ov.fill((160,0,0,140))
-        screen.blit(ov, (0,0))
-        msg = font.render("CRASH!  Game Over", True, (255,255,255))
-        screen.blit(msg, (WIDTH//2 - msg.get_width()//2, HEIGHT//2 - msg.get_height()//2))
-        pygame.display.flip()
-        pygame.time.wait(5000)
-        running = False
-        continue
-
-    # RENDER YOUR GAME HERE
-    screen.blit(background, (0,0))
-    lights.draw(screen, x_mid, y_mid, tile_w, lane_offset_x=lane_spacing_x, lane_offset_y=lane_spacing_y)
-    for c in cars:
-        c.draw(screen)
-    score_surf = font.render(f"Score: {score}", True, (255,255,255))
-    screen.blit(score_surf, (10, 10))
-
-    # flip() the display to put your work on screen
-    pygame.display.flip()
-
-    #clock.tick(60)  # limits FPS to 60
 
 pygame.quit()

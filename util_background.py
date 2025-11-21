@@ -3,7 +3,6 @@ from util_params import WIDTH, HEIGHT
 
 
 SCALE = 2  
-
 # Tile IDs
 GRASS = 28
 H_T, H_M, H_B = 406, 433, 460           # horizontal road pieces
@@ -14,6 +13,7 @@ CENTER_ID, RING_ID = 407, 441           # 3×3 center (407) + ring (441)
 
 # Simple cache for scaled tiles
 _tile_cache = {}
+
 
 #helps with the tile numbers
 def _load_scaled(idx, tw, th):
@@ -80,7 +80,7 @@ def build_background():
     tw, th, _ = _measure_tile()
     gx, gy = WIDTH // tw, HEIGHT // th
     cx, cy = gx // 2, gy // 2
-
+    
     bg = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     _paint_grass(bg, tw, th)
     _paint_h_road(bg, cy, 0, gx-1, tw, th)

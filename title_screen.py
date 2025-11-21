@@ -79,3 +79,34 @@ def _draw_title_contents(screen, W, H, big, small, mid, t):
     screen.blit(pill, (W//2 - pill.get_width()//2, H - 120))
     screen.blit(press, (W//2 - press.get_width()//2, H - 120 + 6))
 
+
+def game_over_prompt(screen, msg, WIDTH, HEIGHT, background, draw_extra = None):
+    clock = pygame.time.Clock()
+    font_big = pygame.font.SysFont("consolas", 36, bold=True)
+    font_small = pygame.font.SysFont("consolas", 22)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return "quit"
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return "quit"
+                if event.key == pygame.K_r:
+                    return "restart"
+
+        screen.blit(background, (0, 0))
+        if draw_extra:
+            draw_extra(screen)
+
+        ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        ov.fill((0, 0, 0, 170))
+        screen.blit(ov, (0, 0))
+
+        txt = font_big.render(msg, True, (255, 255, 255))
+        sub = font_small.render("Press R to restart   •   ESC to quit", True, (230, 230, 230))
+        screen.blit(txt, (WIDTH//2 - txt.get_width()//2, HEIGHT//2 - 40))
+        screen.blit(sub, (WIDTH//2 - sub.get_width()//2, HEIGHT//2 + 10))
+
+        pygame.display.flip()
+        clock.tick(60)
