@@ -118,7 +118,7 @@ while app_running:
                 player.start_siren()
                 next_ev_score += 51
 
-        # gridlock?
+        # gridlock
         lost, approach, count = queue_loss.check(cars)
         if lost:
             choice = game_over_overlay(screen, f"GRIDLOCK on {approach}: {count} cars", background)
@@ -129,7 +129,7 @@ while app_running:
             round_running = False
             continue
 
-        # crash?
+        # crash
         crashed, a, b = crash.check(cars)
         if crashed:
             choice = game_over_overlay(screen, "CRASH!  Game Over", background)

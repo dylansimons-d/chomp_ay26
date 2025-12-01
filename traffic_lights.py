@@ -92,11 +92,11 @@ def make_should_stop(cx, cy, tile_w, tile_h, cross_offset=2, nudge=0.15):
             sign = 1 if car.vx > 0 else -1
             front_now  = car.x + sign * (car.w * 0.5)
             front_next = front_now + car.vx * dt
-            if sign > 0:  # E → approaching stop_e_x from left
+            if sign > 0:  # E  approaching stop_e_x from left
                 if front_now >= stop_e_x - nudgex:   # already past → never stop
                     return False
                 return front_next >= stop_e_x - nudgex
-            else:         # W → approaching stop_w_x from right
+            else:         # W  approaching stop_w_x from right
                 if front_now <= stop_w_x + nudgex:
                     return False
                 return front_next <= stop_w_x + nudgex
@@ -104,11 +104,11 @@ def make_should_stop(cx, cy, tile_w, tile_h, cross_offset=2, nudge=0.15):
             sign = 1 if car.vy > 0 else -1
             front_now  = car.y + sign * (car.h * 0.5)
             front_next = front_now + car.vy * dt
-            if sign > 0:  # S → approaching stop_s_y from above
+            if sign > 0:  # S  approaching stop_s_y from above
                 if front_now >= stop_s_y - nudgey:
                     return False
                 return front_next >= stop_s_y - nudgey
-            else:         # N → approaching stop_n_y from below
+            else:         # N  approaching stop_n_y from below
                 if front_now <= stop_n_y + nudgey:
                     return False
                 return front_next <= stop_n_y + nudgey
